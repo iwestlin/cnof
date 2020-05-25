@@ -1,13 +1,13 @@
 {
   "name": "cnof",
   "version": "1.0.0",
-  "description": "",
-  "main": "cnof.js",
+  "description": "Count Number of Files",
+  "main": "bin/cnof",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "viegg",
   "license": "ISC",
   "dependencies": {
     "cli-table3": "^0.6.0"
