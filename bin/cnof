@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+const path = require('path')
+
+const Table = require('cli-table3')
+const colors = require('colors/safe')
+
+const SUPPORT_WITHFILETYPES = !!fs.readdirSync(__dirname, {withFileTypes: true})[0].isSymbolicLink
+const COUNTS = {}
+const SIZES = {}
+const BLACKLIST = [
+  // 'node_modules',
+]
+
+main()
+function main () {
+  let dir = process.argv[2] || ''
+  dir = dir.trim()
+  if (!dir) throw 'missing directory path!'
+  dir = path.resolve(process.cwd(), dir)
+  count_file_in_dir(dir)
+  console.log(summary())
+}
+
+function count_file_in_dir (dir) {
+  if (dir.endsWith('/')) dir = dir.slice(0, -1)
+  let files
+  if (SUPPORT_WITHFILETYPES) {
+    files = fs.readdirSync(dir, {withFileTypes: true}).map(file => {
+      return {name: file.name, is_dir: file.isDirectory(), is_link: file.isSymbolicLink()}
+    })
+  } else {
+    // for lower version of node which does not support withFileTypes
+    files = fs.readdirSync(dir).map(name => {
+      const t = fs.lstatSync(`${dir}/${name}`)
+      return {name, is_dir: t.isDirectory(), is_link: t.isSymbolicLink()}
+    })
+  }
+  files.forEach(file => {
+    const {name, is_dir, is_link} = file
+    if (name.startsWith('.') || BLACKLIST.includes(name)) return
+    if (is_link) return
+    if (is_dir) return count_file_in_dir(`${dir}/${name}`)
+    // if (!name.includes('.')) return
+    const ext = name.split('.').pop()
+    if (!COUNTS[ext]) COUNTS[ext] = 0
+    COUNTS[ext] += 1
+    const {size} = fs.statSync(dir + '/' + name)
+    if (!SIZES[ext]) SIZES[ext] = 0
+    SIZES[ext] += size
+  })
+}
+
+function summary () {
+  const keys = Object.keys(COUNTS)
+  const tb = new Table()
+  keys.sort((a, b) => COUNTS[b] - COUNTS[a])
+  const records = keys.map(key => [key, COUNTS[key], format_size(SIZES[key])]).map(arr => {
+    return arr.map(content => ({content, hAlign: 'center'}))
+  })
+  const headers = ['Type', 'Count', 'Size'].map(v => ({content: colors.bold.blue(v), hAlign: 'center'}))
+  const total_count = keys.map(v => COUNTS[v]).reduce((acc, val) => acc + val, 0)
+  const total_size = keys.map(v => SIZES[v]).reduce((acc, val) => acc + val, 0)
+  const tails = ['Total', total_count, format_size(total_size)].map(v => ({content: colors.bold(v), hAlign: 'center'}))
+  tb.push(headers, ...records, tails)
+  return tb.toString()
+}
+
+function format_size (n) {
+  n = Number(n)
+  if (Number.isNaN(n)) return ''
+  if (n < 0) return 'invalid size'
+  const units = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB']
+  let flag = 0
+  while (n >= 1024) {
+    n = (n / 1024)
+    flag++
+  }
+  return n.toFixed(2) + ' ' + units[flag]
+}
