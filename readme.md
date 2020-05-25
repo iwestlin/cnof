@@ -12,4 +12,4 @@ npm i -g cnof
 ```
 
 ## capture
-![](./cap.png)
+![](https://i.loli.net/2020/05/26/RDnmNOwFybv9heg.png)
