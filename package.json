@@ -1,6 +1,6 @@
 {
   "name": "cnof",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Count Number of Files",
   "main": "bin/cnof",
   "scripts": {
@@ -9,6 +9,7 @@
   "keywords": [],
   "author": "viegg",
   "license": "ISC",
+  "homepage": "https://github.com/iwestlin/cnof",
   "dependencies": {
     "cli-table3": "^0.6.0"
   },

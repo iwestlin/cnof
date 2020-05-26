@@ -28,25 +28,26 @@ function count_file_in_dir (dir) {
   let files
   if (SUPPORT_WITHFILETYPES) {
     files = fs.readdirSync(dir, {withFileTypes: true}).map(file => {
+      if (file.name.startsWith('.') || BLACKLIST.includes(file.name)) return
       return {name: file.name, is_dir: file.isDirectory(), is_link: file.isSymbolicLink()}
     })
   } else {
     // for lower version of node which does not support withFileTypes
     files = fs.readdirSync(dir).map(name => {
+      if (name.startsWith('.') || BLACKLIST.includes(name)) return
       const t = fs.lstatSync(`${dir}/${name}`)
-      return {name, is_dir: t.isDirectory(), is_link: t.isSymbolicLink()}
+      return {name, is_dir: t.isDirectory(), is_link: t.isSymbolicLink(), size: t.size}
     })
   }
-  files.forEach(file => {
-    const {name, is_dir, is_link} = file
-    if (name.startsWith('.') || BLACKLIST.includes(name)) return
+  files.filter(v => v).forEach(file => {
+    let {name, is_dir, is_link, size} = file
     if (is_link) return
     if (is_dir) return count_file_in_dir(`${dir}/${name}`)
-    // if (!name.includes('.')) return
+    if (!name.includes('.')) return
     const ext = name.split('.').pop()
     if (!COUNTS[ext]) COUNTS[ext] = 0
     COUNTS[ext] += 1
-    const {size} = fs.statSync(dir + '/' + name)
+    size = size || fs.statSync(dir + '/' + name).size
     if (!SIZES[ext]) SIZES[ext] = 0
     SIZES[ext] += size
   })
