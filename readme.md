@@ -12,4 +12,11 @@ npm i -g cnof
 ```
 
 ## capture
-![](https://i.loli.net/2020/05/26/RDnmNOwFybv9heg.png)
+![](https://fffast.oss-cn-hongkong.aliyuncs.com/1590641102838.png)
+
+## notice
+cnof will ignore:  
+- directory which starts with `.`, like .git
+- file which does not contains `.`, like LICENSE, README, etc
+
+Also, cnof will call `.toLowerCase()` to file extension name, which makes `PNG -> png`

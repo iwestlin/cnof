@@ -19,11 +19,11 @@ function main () {
   dir = dir.trim()
   if (!dir) throw 'missing directory path!'
   dir = path.resolve(process.cwd(), dir)
-  count_file_in_dir(dir)
-  console.log(summary())
+  count_files(dir)
+  console.log(make_table())
 }
 
-function count_file_in_dir (dir) {
+function count_files (dir) {
   if (dir.endsWith('/')) dir = dir.slice(0, -1)
   let files
   if (SUPPORT_WITHFILETYPES) {
@@ -42,9 +42,9 @@ function count_file_in_dir (dir) {
   files.filter(v => v).forEach(file => {
     let {name, is_dir, is_link, size} = file
     if (is_link) return
-    if (is_dir) return count_file_in_dir(`${dir}/${name}`)
+    if (is_dir) return count_files(`${dir}/${name}`)
     if (!name.includes('.')) return
-    const ext = name.split('.').pop()
+    const ext = name.split('.').pop().toLowerCase()
     if (!COUNTS[ext]) COUNTS[ext] = 0
     COUNTS[ext] += 1
     size = size || fs.statSync(dir + '/' + name).size
@@ -53,7 +53,7 @@ function count_file_in_dir (dir) {
   })
 }
 
-function summary () {
+function make_table () {
   const keys = Object.keys(COUNTS)
   const tb = new Table()
   keys.sort((a, b) => COUNTS[b] - COUNTS[a])
