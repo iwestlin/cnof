@@ -21,6 +21,7 @@ function main () {
   dir = path.resolve(process.cwd(), dir)
   count_files(dir)
   console.log(make_table())
+  // print_table()
 }
 
 function count_files (dir) {
@@ -79,4 +80,16 @@ function format_size (n) {
     flag++
   }
   return n.toFixed(2) + ' ' + units[flag]
+}
+
+function print_table () {
+  const keys = Object.keys(COUNTS)
+  keys.sort((a, b) => COUNTS[b] - COUNTS[a])
+  const headers = ['Type', 'Count', 'Size']
+  const records = keys.map(key => [key, COUNTS[key], format_size(SIZES[key])])
+  const total_count = keys.map(v => COUNTS[v]).reduce((acc, val) => acc + val, 0)
+  const total_size = keys.map(v => SIZES[v]).reduce((acc, val) => acc + val, 0)
+  const tails = ['Total', total_count, format_size(total_size)]
+  const tb = [headers, ...records, tails]
+  console.table(tb)
 }
