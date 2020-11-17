@@ -36,8 +36,10 @@ function count_files (dir) {
     // for lower version of node which does not support withFileTypes
     files = fs.readdirSync(dir).map(name => {
       if (name.startsWith('.') || BLACKLIST.includes(name)) return
-      const t = fs.lstatSync(`${dir}/${name}`)
-      return {name, is_dir: t.isDirectory(), is_link: t.isSymbolicLink(), size: t.size}
+      try {
+        const t = fs.lstatSync(`${dir}/${name}`)
+        return {name, is_dir: t.isDirectory(), is_link: t.isSymbolicLink(), size: t.size}
+      } catch (e) {}
     })
   }
   files.filter(v => v).forEach(file => {
@@ -48,9 +50,11 @@ function count_files (dir) {
     const ext = name.split('.').pop().toLowerCase()
     if (!COUNTS[ext]) COUNTS[ext] = 0
     COUNTS[ext] += 1
-    size = size || fs.statSync(dir + '/' + name).size
-    if (!SIZES[ext]) SIZES[ext] = 0
-    SIZES[ext] += size
+    try {
+      size = size || fs.statSync(dir + '/' + name).size
+      if (!SIZES[ext]) SIZES[ext] = 0
+      SIZES[ext] += size
+    } catch (e) {}
   })
 }
 
