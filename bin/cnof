@@ -12,6 +12,7 @@ const SIZES = {}
 const BLACKLIST = [
   // 'node_modules',
 ]
+let dir_count = 0
 
 main()
 function main () {
@@ -45,7 +46,10 @@ function count_files (dir) {
   files.filter(v => v).forEach(file => {
     let {name, is_dir, is_link, size} = file
     if (is_link) return
-    if (is_dir) return count_files(`${dir}/${name}`)
+    if (is_dir) {
+      dir_count++
+      return count_files(`${dir}/${name}`)
+    }
     if (!name.includes('.')) return
     const ext = name.split('.').pop().toLowerCase()
     if (!COUNTS[ext]) COUNTS[ext] = 0
@@ -66,10 +70,12 @@ function make_table () {
     return arr.map(content => ({content, hAlign: 'center'}))
   })
   const headers = ['Type', 'Count', 'Size'].map(v => ({content: colors.bold.blue(v), hAlign: 'center'}))
-  const total_count = keys.map(v => COUNTS[v]).reduce((acc, val) => acc + val, 0)
+  let total_count = keys.map(v => COUNTS[v]).reduce((acc, val) => acc + val, 0)
+  const dir = ['Folder', dir_count, ''].map(v => ({content: colors.bold(v), hAlign: 'center'}))
+  total_count += dir_count
   const total_size = keys.map(v => SIZES[v]).reduce((acc, val) => acc + val, 0)
-  const tails = ['Total', total_count, format_size(total_size)].map(v => ({content: colors.bold(v), hAlign: 'center'}))
-  tb.push(headers, ...records, tails)
+  const tail = ['Total', total_count, format_size(total_size)].map(v => ({content: colors.bold(v), hAlign: 'center'}))
+  tb.push(headers, ...records, dir, tail)
   return tb.toString()
 }
 
